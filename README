@@ -1,0 +1,13 @@
+Converter Extension for Google Chrome.
+
+Extension helps to convert main coordinate types:
+
+40:26:46N,79:56:55W
+40:26:46.302N 79:56:55.903W
+40°26′47″N 79°58′36″W
+40d 26′ 47″ N 79d 58′ 36″ W
+40.446195N 79.948862W
+40.446195, -79.948862
+40° 26.7717, -79° 56.93172
+
+Uses main coordinate notations from Wikipedia: http://en.wikipedia.org/wiki/Geographic_coordinate_conversion
