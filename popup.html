@@ -1,0 +1,81 @@
+<style>
+body{
+	min-width:300px;
+	overflow-x:hidden;
+	font-family:'lucida grande',verdana,helvetica,arial,sans-serif;
+	text-align:left;
+	font-size: 12px;
+}
+
+img{
+	margin: 5px;
+	border:2px solid #eee;
+	margin:5px;
+	border:2px solid black;
+	vertical-align:middle;
+	width:75px;
+	height:75px;
+
+}
+
+div.input{ display:block; }
+input{ width:300px; }
+.input  { line-height:27px; }
+.clear  { clear:both; }
+.spacer { margin-bottom:30px; }
+
+.input label{
+	float:left;
+	padding:3px;
+	margin-right:10px;
+}
+
+.note{
+	clear:all;
+	text-align:right;
+	font-size:10px;
+	color:#aaa;
+	font-style:italic;
+}
+
+#convertResults{
+	height:100px;
+	background: grey;
+	color:white;
+}
+
+input[type='submit'] {
+	border:1px solid #bbb;
+	-webkit-border-radius: 4px;
+	width:100px;
+	cursor:pointer;
+	color:black;
+	float:right;
+}
+input[type='submit']:hover{ color: white; }
+input[type='checkbox'] { float:right; border:1px solid red;}
+
+</style>
+<script src="converter.js"></script>
+<script>
+	var c = new Converter();
+</script>
+<body>
+	<div class="input">
+		<input type="text" name="coords" id="coords"/><br/>
+		<!-- 
+			<label>Show on Google Maps</label><input type="checkbox" name="onMap" value="0"/>
+		-->	
+		<br class="clear"/>
+	</div>
+	<span class="note">lat/lng separated by commas, and multiple coordinates by semicolon</span>
+	<br class="clear"/>
+	
+	<input type="submit" name="convert" value="Convert" onclick="c.convert(); return false;"/>
+	<div class="spacer"></div>	
+
+	<div id="convertResults">
+		Results
+	</div>
+</body>
+
