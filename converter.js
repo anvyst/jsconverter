@@ -8,11 +8,14 @@
 var Converter = function(){
 	//default container of coordinates string
 	this.coordinates = ''; 
+	this.DEFAULT_TYPE = 'unknown';
 
 	this.deg = 0;
 	this.min = 0;
 	this.sec = 0;
 	this.dir = '';
+
+	this.type = this.DEFAULT_TYPE;
 
 	this.arrCoords = [];
 };
@@ -37,35 +40,30 @@ Converter.prototype.parseCoordinates = function(coordinates) {
 
 	//matching normal GPS coordinates
 	//40.446195, -79.948862
-	if( matches = coordinates.match(/^([NWSE\-])?\s?(\d+)\.(\d+)?\,?\s+?([NWSE\-])?(\d+)\.(\d+)?/i) ) {
-		alert('decimal');
-		for( var i = 0 ; i < matches.length; i++) {
-			alert(i + ': ' + matches[i]);
-		}
+	//40.446195N 79.948862W
+	if( matches = coordinates.match(/^([NWSE\-])?\s?(\d+)\.(\d+)?([NSWE])?\,?\s+?([NWSE\-])?(\d+)\.(\d+)?([NSWE])?/i) ) {
+		this.type = 'decimal';
 	} 
 	
 	//inmarsat coordinate type	
 	//40 26.7717' N, 79 56.93172' W
 	else if( matches = coordinates.match(/^(\d+)\s+(\d+\.\d+)?\'\s+\w\,?\s+(\d+)\s+(\d+\.\d+)?\'?\s+\w/i) ) {
-		alert('normal');	
-	
+		this.type = 'inmarsat';
+
 	}
 	
 	// matching geo coordinates: 
-	// 1. 40:26:46N,79:56:55W
-	// 2. 40:26:46.302N 79:56:55.903W
-	// 3. 40°26′47″N 79°58′36″W
-	// 4. 40.446195N 79.948862W
+	// 1. 40:26:46N,79:56:55W 			(matches: 40[1],26[2],46[3],N[5],79[6],56[7],55[8],W[10])
+	// 2. 40:26:46.302N 79:56:55.903W 	(matches: 40[1],26[2],46.302[3],302[4],N[5],79[6],56[7], 55.903[8],903[9],W[10])
+	// 3. 40°26′47″N 79°58′36″W 		(matches: 40[1],26[2], 47[3],N[5], 79[6], 58[7], 36[8], W[10])
 	else if( matches = coordinates.match(/^\s?(\d+)[\w\W\:\s]?(\d+)?[\W\:\s]?(\d+\.?(\d+)?)?[\W\:\s]?([NWSE])?[\s+\,]?(\d+)[\w\W\:\s]?(\d+)[\W\:\s]?(\d+\.?(\d+)?)?[\W\:\s]?([NWSE])?/i) ) {
-		alert('dms');
 		for( i = 0; i < matches.length; i++) {
-			alert('matches: '  + matches[i]);
+			alert('matches: ['+i+']'  + matches[i]);
 		}
-	} else {
-		alert('Unknown type of coordinates');
-	}
+		this.type = 'dms';
+	} 
 
-
+	alert('type: ' + this.type);
 };
 
 
