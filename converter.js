@@ -1,78 +1,111 @@
 /**
- *	latitude and longiture convertor
+ *	latitude and longitude convertor
  *	
- *	TODO:
- * 	Single coordinates need to be separated by commas
- * 	Multiple coordinates need to be separated by semicolons
+ *	Coordinate types parsed:
+ *	1. 40.446195, -79.948862W 			-> dec
+ *	2. 40.446195N 79.948862W 			-> dec
+ *	3. 40 26.7717' N, 79 56.93172' W 	-> mindec
+ *	4. 40:26:46N,79:56:55W 				-> dms
+ *	5. 40°26′47″N 79°58′36″W  			-> dms
+ *	
+ *	LATER: 40:26:46.302N 79:56:55.903W
+ *
  * */
-var Converter = function(){
-	//default container of coordinates string
-	this.coordinates = ''; 
-	this.DEFAULT_TYPE = 'unknown';
+(function($){
+	var coordinate = {
+		'lat': 0,
+		'lng': 0
+	};
 
-	this.deg = 0;
-	this.min = 0;
-	this.sec = 0;
-	this.dir = '';
+	var decimalRegex 	= /^\s*?([NS\-])?(\d+)\.(\d+)([NS\-])?\,?\s*([WE\-])?(\d+)\.(\d+)([WE\-])?/i;
+	var minDecRegex 	= /^\s*?(\d+)\s+?(\d+)\.(\d+)\'?\s+?([NS])[\s+]?\,?\s+?(\d+)\s+?(\d+)\.(\d+)\'?[\s+]?([WE])/i;
+	var dmsRegex 		= /^\s*?(\d+)[\W](\d+)[\W](\d+)[\W]?[\s*]?([NS])?\,?[\s+]?(\d+)[\W](\d+)[\W](\d+)[\W]?[\s*]?([WE])/i;
 
-	this.type = this.DEFAULT_TYPE;
+	var methods = {
+		'fromDecimal' : function(matches) {
+			//console.log(matches);
 
-	this.arrCoords = [];
-};
+			coordinate.lat = parseFloat(matches[2] + '.' + matches[3]);
+			
+			if(matches[1] == "S" || matches[1] == "-" || matches[4] == "S") {
+				coordinate.lat *= -1;	
+			}
 
-//convert coordinates and output results
-Converter.prototype.convert = function() {
-	this.setSubmitVars();
+			coordinate.lng = parseFloat(matches[6] + '.' + matches[7]);
+			
+			if( matches[5] == "W" || matches[5] == "-" || (matches[8] == "W") ) {
+				coordinate.lng *= -1;
+			}
+		},	
+		'fromMinDec'  : function(matches) {
+			//console.log(matches);
+			coordinate.lat = parseInt(matches[1]) + (parseFloat(matches[2]+'.'+matches[3]) / 60);
 
-	var coords = [];
+			if( matches[4] == "S") {
+				coordinate.lat *= -1;
+			}
 
-	coords = this.parseCoordinates(this.coordinates);
-};
+			coordinate.lng = parseInt(matches[5]) + (parseFloat(matches[6]+'.'+matches[7]) / 60);
+			
+			if( matches[8] == "W") {
+				coordinate.lng *= -1;
+			}
+			//console.log(coordinate);
+		},
+		'fromDms'	  : function(matches) { 
+			console.log(matches);
+			coordinate.lat = parseInt(matches[1]) + (parseFloat( (parseInt(matches[2]) * 60 + parseInt(matches[3]) ) / 3600));
+		
+			if( matches[4] == "S" ) {
+				coordinate.lat *= -1;
+			}
+			coordinate.lng = parseInt(matches[5]) + (parseFloat( (parseInt(matches[6]) * 60 + parseInt(matches[7]) ) / 3600));
+			
+			if( matches[8] == "W" ) {
+				coordinate.lng *= -1;
+			}
+		
+			coordinate.lat = $.fn.roundCoordinates(coordinate.lat, 6);
+			coordinate.lng = $.fn.roundCoordinates(coordinate.lng, 6);
+		},
+		'toMinDec' 	  : function(data) { console.log('toMinDec'); },
+		'toDms'		  : function(data) { console.log('toDms'); },
+		'toDecimal'	  : function(data) { console.log('toDecimal'); }
+	}; 
 
-//convert coordinates from initial type to remaining ones
-Converter.prototype.parseCoordinates = function(coordinates) {
-	alert('in parse');
-	if( coordinates === '' || coordinates.length < 1 ) {
-		alert('Specify coordinates for convertion');	
-	}
 
-	var matches = [];
-
-	//matching normal GPS coordinates
-	//40.446195, -79.948862
-	//40.446195N 79.948862W
-	if( matches = coordinates.match(/^([NWSE\-])?\s?(\d+)\.(\d+)?([NSWE])?\,?\s+?([NWSE\-])?(\d+)\.(\d+)?([NSWE])?/i) ) {
-		this.type = 'decimal';
-	} 
-	
-	//inmarsat coordinate type	
-	//40 26.7717' N, 79 56.93172' W
-	else if( matches = coordinates.match(/^(\d+)\s+(\d+\.\d+)?\'\s+\w\,?\s+(\d+)\s+(\d+\.\d+)?\'?\s+\w/i) ) {
-		this.type = 'inmarsat';
-
-	}
-	
-	// matching geo coordinates: 
-	// 1. 40:26:46N,79:56:55W 			(matches: 40[1],26[2],46[3],N[5],79[6],56[7],55[8],W[10])
-	// 2. 40:26:46.302N 79:56:55.903W 	(matches: 40[1],26[2],46.302[3],302[4],N[5],79[6],56[7], 55.903[8],903[9],W[10])
-	// 3. 40°26′47″N 79°58′36″W 		(matches: 40[1],26[2], 47[3],N[5], 79[6], 58[7], 36[8], W[10])
-	else if( matches = coordinates.match(/^\s?(\d+)[\w\W\:\s]?(\d+)?[\W\:\s]?(\d+\.?(\d+)?)?[\W\:\s]?([NWSE])?[\s+\,]?(\d+)[\w\W\:\s]?(\d+)[\W\:\s]?(\d+\.?(\d+)?)?[\W\:\s]?([NWSE])?/i) ) {
-		for( i = 0; i < matches.length; i++) {
-			alert('matches: ['+i+']'  + matches[i]);
+	$.fn.parseCoordinates = function(){
+		if( matches = $(this).val().match(decimalRegex) ) {
+			$.fn.setCoordinate('fromDecimal', matches);		
+		} else if( matches =  $(this).val().match(minDecRegex) ) {
+			$.fn.setCoordinate('fromMinDec', matches);		
+		} else if( matches = $(this).val().match(dmsRegex) ) {
+			$.fn.setCoordinate('fromDms', matches);		
+		} else {
+			$.error('Couldn\'t find appropriate match for coordinate');
 		}
-		this.type = 'dms';
-	} 
-
-	alert('type: ' + this.type);
-};
-
-
-//pass vars to private properties of prototype class
-Converter.prototype.setSubmitVars = function(){
-	var data = document.getElementById('coords').value;
 	
-	if( (data !== "") || (typeof data !== undefined) ) {
-		this.coordinates = data;
-	} 
-};
+	};
 
+	/**
+	 *	setCoordinate is converting coordinates with "from<type>" to 
+	 *	decimal notation and vice verca with "to<type>" notation.
+	 *	@param string type - coordinate type
+	 *	@param array  matches - matches of certain regex'es
+	 * */
+	$.fn.setCoordinate = function(type, matches) {
+		// Method calling logic
+    	if ( methods[type] ) {
+      		return methods[type].apply( this, Array.prototype.slice.call( arguments, 1 ));
+    	} else if ( typeof method === 'object' || ! method ) {
+      		return methods.init.apply( this, arguments );
+    	} else {
+      		$.error( 'Method ' +  method + ' does not exist on jQuery.setCoordinate' );
+    	}   	
+	};
+
+	$.fn.roundCoordinates = function(num, dec_points) {
+		var result = Math.round(num*Math.pow(10,dec_points))/Math.pow(10,dec_points);
+		return result;
+	};
+})(jQuery);

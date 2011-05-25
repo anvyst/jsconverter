@@ -1,7 +1,10 @@
 {
- "name": "Convertor Extension",
+ "name" : "Chrome Coordinates Extension",
  "version": "1.0",
- "description": "Extension simplifies conversion of coordinates",
+ "description": "Extension simplifies conversion of coordinates from different naming notations",
+ "permissions": [
+	 	"http://ajax.googleapis.com/"
+	 ],
  "browser_action": {
  	"default_icon": "icon.png",
 	"popup": "popup.html"

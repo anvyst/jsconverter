@@ -54,24 +54,30 @@ input[type='submit'] {
 }
 input[type='submit']:hover{ color: white; }
 input[type='checkbox'] { float:right; border:1px solid red;}
-
 </style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
 <script src="converter.js"></script>
-<script>
-	var c = new Converter();
+<script type="text/javascript">
+<!--
+	$(document).ready(function(){
+			$('#formCoordinates').submit(function(){
+				$('#coords').parseCoordinates();	
+				return false;
+			});	
+	});
+-->
 </script>
 <body>
-	<div class="input">
-		<input type="text" name="coords" id="coords"/><br/>
-		<!-- 
-			<label>Show on Google Maps</label><input type="checkbox" name="onMap" value="0"/>
-		-->	
+	<form id="formCoordinates" action="">	
+		<div class="input">
+			<input type="text" name="coords" id="coords"/><br/>
+			<br class="clear"/>
+		</div>
+		<span class="note">lat/lng separated by comma</span>
 		<br class="clear"/>
-	</div>
-	<span class="note">lat/lng separated by commas, and multiple coordinates by semicolon</span>
-	<br class="clear"/>
-	
-	<input type="submit" name="convert" value="Convert" onclick="c.convert(); return false;"/>
+		
+		<input type="submit" name="convert" value="Convert"/>
+	</form>
 	<div class="spacer"></div>	
 
 	<div id="convertResults">
