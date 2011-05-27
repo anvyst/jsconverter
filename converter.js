@@ -12,6 +12,7 @@
  *
  * */
 (function($){
+	//basic decimal coordinate container
 	var coordinate = {
 		'lat': 0,
 		'lng': 0
@@ -23,8 +24,6 @@
 
 	var methods = {
 		'fromDecimal' : function(matches) {
-			//console.log(matches);
-
 			coordinate.lat = parseFloat(matches[2] + '.' + matches[3]);
 			
 			if(matches[1] == "S" || matches[1] == "-" || matches[4] == "S") {
@@ -38,7 +37,6 @@
 			}
 		},	
 		'fromMinDec'  : function(matches) {
-			//console.log(matches);
 			coordinate.lat = parseInt(matches[1]) + (parseFloat(matches[2]+'.'+matches[3]) / 60);
 
 			if( matches[4] == "S") {
@@ -50,7 +48,6 @@
 			if( matches[8] == "W") {
 				coordinate.lng *= -1;
 			}
-			//console.log(coordinate);
 		},
 		'fromDms'	  : function(matches) { 
 			console.log(matches);
@@ -68,12 +65,43 @@
 			coordinate.lat = $.fn.roundCoordinates(coordinate.lat, 6);
 			coordinate.lng = $.fn.roundCoordinates(coordinate.lng, 6);
 		},
+		'toDms'		  : function(data) { 
+			var stringResult = [];
+		
+			var result = { 
+				lat:{ deg: null, min: null, sec: null},
+				lng:{ deg: null, min: null, sec: null} 
+			};
+			
+			$.each(data,function(idx, val) {
+				var tmp = "";
+				
+				if( val < 0 ) {
+					tmp = "-";
+					val = Math.abs(val);
+				}
+
+				result[idx].deg = parseInt(val);
+				result[idx].min = parseInt((val - result[idx].deg) * 60);
+				result[idx].sec = parseInt(Math.ceil((((val - result[idx].deg) * 60) - result[idx].min) * 60));
+				
+				tmp += result[idx].deg + "\u00B0 " + result[idx].min + "' " + result[idx].sec + "\"";
+			
+				stringResult.push(tmp);
+			});
+
+			return stringResult.join(', ');
+		},
 		'toMinDec' 	  : function(data) { console.log('toMinDec'); },
-		'toDms'		  : function(data) { console.log('toDms'); },
 		'toDecimal'	  : function(data) { console.log('toDecimal'); }
 	}; 
 
 
+	/**
+	 *	parseCoordinates method
+	 *	converts given type of coordinate to decimal 
+	 *	as base coordinate notation
+	 * */
 	$.fn.parseCoordinates = function(){
 		if( matches = $(this).val().match(decimalRegex) ) {
 			$.fn.setCoordinate('fromDecimal', matches);		
@@ -84,7 +112,13 @@
 		} else {
 			$.error('Couldn\'t find appropriate match for coordinate');
 		}
+
+		//collect all the standards
+		var outputResult = {
+			toDms : $.fn.setCoordinate('toDms', coordinate)
+		};
 	
+		console.log(outputResult);
 	};
 
 	/**
