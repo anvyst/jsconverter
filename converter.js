@@ -25,42 +25,25 @@
 	var methods = {
 		'fromDecimal' : function(matches) {
 			coordinate.lat = parseFloat(matches[2] + '.' + matches[3]);
+			coordinate.lat *= $.fn.setHemisphere([ matches[1], matches[4] ], 'lat', 'sign');			
 			
-			if(matches[1] == "S" || matches[1] == "-" || matches[4] == "S") {
-				coordinate.lat *= -1;	
-			}
-
 			coordinate.lng = parseFloat(matches[6] + '.' + matches[7]);
-			
-			if( matches[5] == "W" || matches[5] == "-" || (matches[8] == "W") ) {
-				coordinate.lng *= -1;
-			}
+			coordinate.lng *= $.fn.setHemisphere( [matches[5], matches[8]], 'lng','sign');
 		},	
 		'fromMinDec'  : function(matches) {
 			coordinate.lat = parseInt(matches[1]) + (parseFloat(matches[2]+'.'+matches[3]) / 60);
-
-			if( matches[4] == "S") {
-				coordinate.lat *= -1;
-			}
+			coordinate.lat *= $.fn.setHemisphere( [matches[4]], 'lat','sign');
 
 			coordinate.lng = parseInt(matches[5]) + (parseFloat(matches[6]+'.'+matches[7]) / 60);
-			
-			if( matches[8] == "W") {
-				coordinate.lng *= -1;
-			}
+			coordinate.lng *= $.fn.setHemisphere( [ matches[8] ], 'lng','sign');	
 		},
 		'fromDms'	  : function(matches) { 
 			console.log(matches);
 			coordinate.lat = parseInt(matches[1]) + (parseFloat( (parseInt(matches[2]) * 60 + parseInt(matches[3]) ) / 3600));
-		
-			if( matches[4] == "S" ) {
-				coordinate.lat *= -1;
-			}
-			coordinate.lng = parseInt(matches[5]) + (parseFloat( (parseInt(matches[6]) * 60 + parseInt(matches[7]) ) / 3600));
+			coordinate.lat *= $.fn.setHemisphere([matches[4]], 'lat','sign');
 			
-			if( matches[8] == "W" ) {
-				coordinate.lng *= -1;
-			}
+			coordinate.lng = parseInt(matches[5]) + (parseFloat( (parseInt(matches[6]) * 60 + parseInt(matches[7]) ) / 3600));
+			coordinate.lng *= $.fn.setHemisphere( [matches[8]], 'lng','sign');
 		
 			coordinate.lat = $.fn.roundCoordinates(coordinate.lat, 6);
 			coordinate.lng = $.fn.roundCoordinates(coordinate.lng, 6);
@@ -136,6 +119,34 @@
     	} else {
       		$.error( 'Method ' +  method + ' does not exist on jQuery.setCoordinate' );
     	}   	
+	};
+
+	/**
+	 *	@param array arrVars of all possible matches of hemisphere in regex
+	 *	@param string lat or lng
+	 *	@param string retVal either integer or char
+	 * */
+	$.fn.setHemisphere = function(arrVars, type, retVal) {
+		var result = { sign: 1, letter: ""};
+		var tmp = 0;
+		if( arrVars.length > 0) {
+			for(var i = 0; i <= arrVars.length; i++) {
+				if( arrVars[i] === "S" || arrVars[i] === "W" || arrVars[i] === "-" ) {
+					console.log('it\'s negative');
+					tmp = -1;	
+				} 
+			}
+		}
+
+		if( tmp < 0 ) {
+			result.sign = tmp;
+			result.letter = (type == "lat") ? "S" : "W";
+		}
+		if( retVal == "sign") {
+			return result.sign;	
+		} else {
+			return result.letter;
+		}
 	};
 
 	$.fn.roundCoordinates = function(num, dec_points) {
